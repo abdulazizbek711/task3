@@ -6,7 +6,7 @@ using System.Text;
 class RockPaperScissors
 {
     private readonly string[] moves;
-    private byte[]? key;
+    private byte[] key = new byte[32]; // Initialize with dummy values
 
     public RockPaperScissors(string[] moves)
     {
@@ -18,6 +18,7 @@ class RockPaperScissors
         }
 
         this.moves = moves;
+        GenerateKey();
     }
 
     private bool HasDuplicates(string[] arr)
@@ -37,15 +38,13 @@ class RockPaperScissors
     {
         using (var rng = RandomNumberGenerator.Create())
         {
-            int byteLength = 32; // 256 bits
-            key = new byte[byteLength];
             rng.GetBytes(key);
         }
     }
 
     private byte[] CalculateHmac(byte[] message)
     {
-        using (var hmac = new HMACSHA256(key!))
+        using (var hmac = new HMACSHA256(key))
         {
             return hmac.ComputeHash(message);
         }
@@ -81,10 +80,6 @@ class RockPaperScissors
 
     public void Start()
     {
-        GenerateKey();
-
-        Console.WriteLine($"HMAC key: {BitConverter.ToString(key!).Replace("-", "").ToLower()}");
-
         for (int i = 0; i < moves.Length; i++)
         {
             Console.WriteLine($"{i + 1} - {moves[i]}");
@@ -115,14 +110,13 @@ class RockPaperScissors
                 byte[] message = Encoding.UTF8.GetBytes(moves[userMove - 1]);
                 byte[] hmac = CalculateHmac(message);
 
-                Console.WriteLine($"HMAC: {BitConverter.ToString(hmac).Replace("-", "").ToLower()}");
-
                 int computerMove = RandomNumberGenerator.GetInt32(moves.Length) + 1;
-                Console.WriteLine($"Computer move: {moves[computerMove - 1]}");
-
                 int half = moves.Length / 2;
                 int winningMove = (userMove + half) % moves.Length;
                 int losingMove = (userMove + moves.Length - half) % moves.Length;
+
+                Console.WriteLine($"Your move: {moves[userMove - 1]}");
+                Console.WriteLine($"Computer move: {moves[computerMove - 1]}");
 
                 if (computerMove == userMove)
                 {
@@ -137,7 +131,8 @@ class RockPaperScissors
                     Console.WriteLine("You lose!");
                 }
 
-                Console.WriteLine($"HMAC key: {BitConverter.ToString(key!).Replace("-", "").ToLower()}");
+                Console.WriteLine($"HMAC key: {BitConverter.ToString(key).Replace("-", "").ToLower()}");
+                Console.WriteLine($"HMAC: {BitConverter.ToString(hmac).Replace("-", "").ToLower()}");
             }
             else
             {
