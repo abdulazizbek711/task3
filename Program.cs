@@ -80,6 +80,9 @@ class RockPaperScissors
 
     public void Start()
     {
+        byte[] hmac;
+
+        Console.WriteLine("Available moves:");
         for (int i = 0; i < moves.Length; i++)
         {
             Console.WriteLine($"{i + 1} - {moves[i]}");
@@ -91,6 +94,10 @@ class RockPaperScissors
         int userMove;
         do
         {
+            hmac = CalculateHmac(BitConverter.GetBytes(DateTime.Now.Ticks)); // Generate a new HMAC for each turn
+
+            Console.WriteLine($"HMAC: {BitConverter.ToString(hmac).Replace("-", "").ToLower()}");
+
             Console.Write("Enter your move: ");
             string? input = Console.ReadLine()?.Trim();
 
@@ -107,16 +114,14 @@ class RockPaperScissors
 
             if (int.TryParse(input, out userMove) && userMove >= 1 && userMove <= moves.Length)
             {
-                byte[] message = Encoding.UTF8.GetBytes(moves[userMove - 1]);
-                byte[] hmac = CalculateHmac(message);
-
                 int computerMove = RandomNumberGenerator.GetInt32(moves.Length) + 1;
-                int half = moves.Length / 2;
-                int winningMove = (userMove + half) % moves.Length;
-                int losingMove = (userMove + moves.Length - half) % moves.Length;
 
                 Console.WriteLine($"Your move: {moves[userMove - 1]}");
                 Console.WriteLine($"Computer move: {moves[computerMove - 1]}");
+
+                int half = moves.Length / 2;
+                int winningMove = (userMove + half) % moves.Length;
+                int losingMove = (userMove + moves.Length - half) % moves.Length;
 
                 if (computerMove == userMove)
                 {
@@ -132,7 +137,6 @@ class RockPaperScissors
                 }
 
                 Console.WriteLine($"HMAC key: {BitConverter.ToString(key).Replace("-", "").ToLower()}");
-                Console.WriteLine($"HMAC: {BitConverter.ToString(hmac).Replace("-", "").ToLower()}");
             }
             else
             {
